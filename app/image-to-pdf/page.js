@@ -1,178 +1,215 @@
 'use client';
 
-import { useState } from 'react';
-import { jsPDF } from 'jspdf';
-import { useDropzone } from 'react-dropzone';
-import { Image as ImageIcon, CheckCircle, X, Download, Share2, UploadCloud } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { 
+  FiImage, FiDownload, FiRefreshCw, FiCheckCircle, 
+  FiUploadCloud, FiShield, FiZap, FiLayers, FiMaximize 
+} from 'react-icons/fi'; 
 
-export default function ImageToPDF() {
-  const [images, setImages] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [generatedBlob, setGeneratedBlob] = useState(null);
+export default function ImageToPdfPage() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [pdfBlob, setPdfBlob] = useState(null);
+  const [fileName, setFileName] = useState("images.pdf");
+  const [error, setError] = useState("");
+  const fileInputRef = useRef(null);
 
-  const readFileAsBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+  // --- DOWNLOAD HELPER ---
+  const downloadPdf = (blob, name) => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   };
 
-  const onDrop = async (acceptedFiles) => {
-    setGeneratedBlob(null);
-    const processedImages = await Promise.all(acceptedFiles.map(async (file) => {
-      const base64 = await readFileAsBase64(file);
-      return {
-        id: Math.random().toString(36),
-        preview: URL.createObjectURL(file),
-        base64: base64,
-        type: file.type === 'image/png' ? 'PNG' : 'JPEG'
-      };
-    }));
-    setImages((prev) => [...prev, ...processedImages]);
-  };
+  // --- API HANDLER ---
+  async function handleFiles(files) {
+    if (!files || files.length === 0) return;
+    setIsLoading(true);
+    setError("");
+    setPdfBlob(null);
 
-  const { getRootProps, getInputProps, open } = useDropzone({
-    accept: { 'image/jpeg': ['.jpeg', '.jpg'], 'image/png': ['.png'] },
-    onDrop,
-    noClick: true
-  });
-
-  const removeImage = (index) => {
-    setImages(images.filter((_, i) => i !== index));
-  };
-
-  const convertToPDF = () => {
-    if (images.length === 0) return;
-    setLoading(true);
+    const formData = new FormData();
+    for (let i = 0; i < files.length; i++) {
+      formData.append('files', files[i]);
+    }
 
     try {
-      const doc = new jsPDF();
-
-      images.forEach((image, index) => {
-        const imgProps = doc.getImageProperties(image.base64);
-        const pdfWidth = doc.internal.pageSize.getWidth();
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-        if (index > 0) doc.addPage();
-        doc.addImage(image.base64, image.type, 0, 0, pdfWidth, pdfHeight);
-      });
-
-      const blob = doc.output('blob');
-      setGeneratedBlob(blob);
-      doc.save('converted-images.pdf');
+      const response = await fetch('/api/image-to-pdf', { method: 'POST', body: formData });
+      if (!response.ok) throw new Error("Conversion failed.");
+      const blob = await response.blob();
+      setPdfBlob(blob);
+      downloadPdf(blob, "images_converted.pdf");
     } catch (err) {
       console.error(err);
-      alert("Error creating PDF.");
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
-    setLoading(false);
-  };
-
-  const handleShare = async () => {
-    if (!generatedBlob) return;
-    const file = new File([generatedBlob], "converted-images.pdf", { type: "application/pdf" });
-
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({
-        files: [file],
-        title: 'Image to PDF',
-        text: 'Here is your converted PDF.'
-      });
-    } else {
-      alert("Sharing not supported on this device.");
-    }
-  };
+  }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold text-center mb-2">Convert Images to PDF</h1>
-      <p className="text-center text-gray-500 mb-8">JPG and PNG to PDF. Free & Private.</p>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50 font-sans">
       
-      {/* Upload Area */}
-      {!generatedBlob && (
-        <div {...getRootProps()} className="border-2 border-dashed border-blue-300 bg-blue-50 rounded-xl p-8 text-center transition hover:bg-blue-100 relative">
-          <input {...getInputProps()} />
-          <UploadCloud className="mx-auto text-blue-400 mb-4" size={48} />
-          <p className="text-gray-600 mb-6">Drop images here</p>
-          <button 
-            type="button" 
-            onClick={open} 
-            className="bg-blue-600 text-white px-8 py-3 rounded-full font-bold shadow-md hover:bg-blue-700 transition"
-          >
-            Select Images
-          </button>
+      {/* --- HERO TOOL SECTION --- */}
+      <div className="flex flex-col items-center p-6 pt-16 pb-24">
+        <div className="w-full max-w-lg text-center mb-10">
+          <h1 className="text-5xl font-extrabold tracking-tight text-gray-900 mb-3">Image to PDF</h1>
+          <p className="text-lg text-gray-500 font-medium">Combine JPG, PNG & Photos into a single document.</p>
         </div>
-      )}
 
-      {/* Preview Grid */}
-      {!generatedBlob && images.length > 0 && (
-        <div className="grid grid-cols-3 md:grid-cols-4 gap-4 mt-8">
-          {images.map((item, idx) => (
-            <div key={item.id} className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden border border-gray-200 shadow-sm group">
-              <img src={item.preview} className="object-cover w-full h-full" alt="preview" />
-              <button 
-                onClick={() => removeImage(idx)}
-                className="absolute top-1 right-1 bg-white rounded-full p-1 shadow hover:bg-red-100 text-red-500"
-              >
-                <X size={14} />
-              </button>
+        <div className="w-full max-w-lg bg-white shadow-2xl rounded-3xl p-10 transition-all hover:scale-[1.01]">
+          {error && <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-xl text-sm font-bold">⚠️ {error}</div>}
+
+          {pdfBlob ? (
+            <div className="text-center animate-fade-in">
+              <div className="mx-auto w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6 shadow-sm">
+                <FiCheckCircle size={40} />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Conversion Complete!</h3>
+              <div className="space-y-4 mt-8">
+                <button onClick={() => downloadPdf(pdfBlob, fileName)} className="w-full flex items-center justify-center gap-3 bg-purple-600 hover:bg-purple-700 text-white py-4 px-6 rounded-xl font-bold text-lg shadow-lg shadow-purple-200 transition-transform hover:-translate-y-1">
+                  <FiDownload size={20} /> Download PDF
+                </button>
+                <button onClick={() => { setPdfBlob(null); }} className="w-full flex items-center justify-center gap-3 bg-gray-100 hover:bg-gray-200 text-gray-700 py-4 px-6 rounded-xl font-bold text-lg">
+                  <FiRefreshCw size={20} /> Convert More
+                </button>
+              </div>
             </div>
-          ))}
-        </div>
-      )}
-
-      {/* Convert Button */}
-      {!generatedBlob && images.length > 0 && (
-        <div className="mt-8">
-          <button 
-            onClick={convertToPDF}
-            disabled={loading}
-            className="bg-blue-600 text-white w-full py-4 rounded-lg font-bold text-lg hover:bg-blue-700 transition disabled:opacity-50"
-          >
-            {loading ? 'Converting...' : 'Convert to PDF'}
-          </button>
-        </div>
-      )}
-
-      {/* SUCCESS SCREEN */}
-      {generatedBlob && (
-        <div className="mt-8 p-8 bg-green-50 border border-green-200 rounded-xl text-center">
-          <div className="inline-block p-4 bg-green-100 rounded-full mb-4">
-            <CheckCircle className="text-green-600" size={40} />
-          </div>
-          <h2 className="text-2xl font-bold text-green-800 mb-4">Ready to Download!</h2>
-          
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <button 
-              onClick={() => {
-                const url = URL.createObjectURL(generatedBlob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'converted-images.pdf';
-                a.click();
-              }}
-              className="flex items-center justify-center gap-2 bg-green-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-green-700 shadow-lg"
+          ) : (
+            <div 
+              onDrop={(e) => { e.preventDefault(); handleFiles(e.dataTransfer.files); }}
+              onDragOver={(e) => e.preventDefault()}
+              className={`border-3 border-dashed rounded-2xl p-12 text-center transition-all cursor-pointer group ${isLoading ? 'border-gray-200 bg-gray-50' : 'border-purple-200 bg-white hover:border-purple-500 hover:bg-purple-50'}`}
+              onClick={() => !isLoading && fileInputRef.current.click()}
             >
-              <Download size={20} /> Download Again
-            </button>
+              <input type="file" multiple ref={fileInputRef} onChange={(e) => handleFiles(e.target.files)} accept="image/*" className="hidden" />
+              {isLoading ? (
+                <div className="flex flex-col items-center">
+                  <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-4"></div>
+                  <p className="text-gray-500 font-bold text-lg animate-pulse">Converting...</p>
+                </div>
+              ) : (
+                <>
+                  <div className="w-20 h-20 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                    <FiImage size={36} />
+                  </div>
+                  <p className="text-gray-900 font-extrabold text-2xl mb-2">Drag Images Here</p>
+                  <p className="text-gray-400 font-medium text-sm">JPG, PNG, GIF supported</p>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
 
-            <button 
-              onClick={handleShare}
-              className="flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 shadow-lg"
-            >
-              <Share2 size={20} /> Share File
-            </button>
+      {/* --- HOW IT WORKS (UPDATED ICON) --- */}
+      <div className="bg-white py-24 px-6 border-t border-gray-100">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl font-extrabold text-gray-900 mb-6">How to Convert Images to PDF</h2>
+            <p className="text-xl text-gray-500">Three simple steps to combine your photos.</p>
           </div>
 
-          <button 
-            onClick={() => { setImages([]); setGeneratedBlob(null); }}
-            className="mt-6 text-gray-500 hover:text-gray-700 underline text-sm"
-          >
-            Convert more images
-          </button>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-16 text-center">
+            
+            {/* STEP 1: ICON UPDATED HERE */}
+            <div className="relative">
+              <div className="w-24 h-24 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-sm">
+                <FiImage size={40} />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Upload Images</h3>
+              <p className="text-gray-500 text-lg leading-relaxed">Select JPG or PNG files from your gallery. You can select multiple files at once.</p>
+            </div>
+
+            <div className="relative">
+              <div className="w-24 h-24 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-sm">
+                <FiUploadCloud size={40} />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Processing</h3>
+              <p className="text-gray-500 text-lg leading-relaxed">Our intelligent engine automatically aligns your images and creates pages instantly.</p>
+            </div>
+
+            <div className="relative">
+              <div className="w-24 h-24 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-sm">
+                <FiDownload size={40} />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Download PDF</h3>
+              <p className="text-gray-500 text-lg leading-relaxed">Get your consolidated document immediately. No watermarks, no limits.</p>
+            </div>
+          </div>
         </div>
-      )}
+      </div>
+
+      {/* --- WHY CHOOSE US (Matches Home Page) --- */}
+      <div className="py-24 px-6 bg-slate-50">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl font-extrabold text-gray-900 mb-6">Why use PDF Matrix?</h2>
+            <p className="text-xl text-gray-500">The best way to manage your photo documents.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <div className="bg-white p-10 rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 flex items-start space-x-6">
+              <div className="flex-shrink-0 w-16 h-16 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center">
+                <FiShield size={32} />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">100% Secure</h3>
+                <p className="text-gray-500 text-lg leading-relaxed">Your photos are processed via TLS encryption and permanently deleted from our servers after 1 hour.</p>
+              </div>
+            </div>
+            <div className="bg-white p-10 rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 flex items-start space-x-6">
+              <div className="flex-shrink-0 w-16 h-16 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center">
+                <FiZap size={32} />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Instant Conversion</h3>
+                <p className="text-gray-500 text-lg leading-relaxed">No software installation needed. Convert directly in your browser on iPhone, Android, or PC.</p>
+              </div>
+            </div>
+            <div className="bg-white p-10 rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 flex items-start space-x-6">
+              <div className="flex-shrink-0 w-16 h-16 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center">
+                <FiLayers size={32} />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Universal Format</h3>
+                <p className="text-gray-500 text-lg leading-relaxed">Convert varied image formats into a single, standardized PDF that looks the same on every device.</p>
+              </div>
+            </div>
+            <div className="bg-white p-10 rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 flex items-start space-x-6">
+              <div className="flex-shrink-0 w-16 h-16 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center">
+                <FiMaximize size={32} />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">High Quality</h3>
+                <p className="text-gray-500 text-lg leading-relaxed">We optimize the images for file size while maintaining strict visual quality for printing.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* --- SEO CONTENT BLOCK --- */}
+      <div className="bg-white py-24 px-6 border-t border-gray-100">
+        <div className="max-w-4xl mx-auto prose prose-lg prose-purple text-gray-500">
+          <h2 className="text-4xl font-bold text-gray-900 mb-8 text-center">Convert JPG to PDF Online Free</h2>
+          <p className="mb-6">
+            Converting images to PDF is essential for presenting portfolios, organizing receipts, or sharing multiple photos in a single, professional file. 
+            Instead of sending 10 separate attachments, <strong>PDF Matrix</strong> allows you to bundle them into one lightweight document.
+          </p>
+          <p className="mb-6">
+            Our tool is browser-based, meaning you don't need to install heavy software like Adobe Acrobat. Whether you are on Windows, Mac, iOS, or Android, 
+            you can convert your images in seconds for free.
+          </p>
+          <p>
+            Experience the easiest way to turn your gallery into a document. Simply drag, drop, and download.
+          </p>
+        </div>
+      </div>
+
     </div>
   );
 }
