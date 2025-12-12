@@ -14,14 +14,15 @@ export default function Icon() {
       // ImageResponse JSX element
       <div
         style={{
-          fontSize: 24,
-          background: 'transparent',
+          fontSize: 20, // Slightly smaller font to fit inside the box
+          background: 'linear-gradient(to bottom right, #2563eb, #7c3aed)', // Blue to Violet Gradient
           width: '100%',
           height: '100%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: '#4f46e5', // This is Indigo-600 (Your brand color)
+          color: 'white', // White text stands out on the gradient
+          borderRadius: '8px', // Rounded corners (like an app icon)
         }}
       >
         ❖
