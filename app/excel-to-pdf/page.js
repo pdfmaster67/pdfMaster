@@ -147,7 +147,7 @@ export default function ExcelToPdfPage() {
       <div className="py-24 px-6 bg-slate-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-20">
-            <h2 className="text-4xl font-extrabold text-gray-900 mb-6">Why use PDF Matrix?</h2>
+            <h2 className="text-4xl font-extrabold text-gray-900 mb-6">Why use Tools Matrix?</h2>
             <p className="text-xl text-gray-500">The smartest way to handle financial documents.</p>
           </div>
 
@@ -198,7 +198,7 @@ export default function ExcelToPdfPage() {
           <h2 className="text-4xl font-bold text-gray-900 mb-8 text-center">Convert Spreadsheets to PDF</h2>
           <p className="mb-6">
             Excel spreadsheets are great for data analysis, but terrible for printing or sharing. Formatting often breaks when opened on different computers, and cells can be accidentally edited. 
-            By using <strong>PDF Matrix</strong>, you lock in your formatting, fonts, and column widths.
+            By using <strong>Tools Matrix</strong>, you lock in your formatting, fonts, and column widths.
           </p>
           <p className="mb-6">
             This tool is perfect for invoices, balance sheets, inventory lists, and financial reports where data integrity and professional presentation are key.

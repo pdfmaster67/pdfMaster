@@ -2,19 +2,19 @@ import './globals.css';
 import { Inter, Plus_Jakarta_Sans } from 'next/font/google'; 
 import Script from 'next/script';
 import Link from 'next/link';
-import { FiGlobe, FiChevronDown } from 'react-icons/fi'; 
+import { FiGlobe, FiChevronDown, FiBox } from 'react-icons/fi'; // Added FiBox for Logo
 
 const inter = Inter({ subsets: ['latin'] });
 const jakarta = Plus_Jakarta_Sans({ subsets: ['latin'] });
 
 export const metadata = {
-  title: 'PDF Matrix - The Ultimate PDF Toolkit',
-  description: 'Convert, Compress, and Edit PDFs with our free, secure, and private online tools.',
+  title: 'Tools Matrix - The Ultimate Online Toolkit',
+  description: 'Free online tools for PDF, Images, and Text. Convert, edit, and create securely.',
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" className="scroll-smooth">
       <head>
         <Script
           async
@@ -30,15 +30,15 @@ export default function RootLayout({ children }) {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between h-20 items-center">
               
-              {/* Logo */}
+              {/* NEW LOGO: Tools Matrix */}
               <Link href="/" className="text-2xl font-extrabold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent flex items-center gap-2">
-                <span className="text-3xl">❖</span> PDF Matrix
+                <FiBox className="text-indigo-600 text-3xl" /> Tools Matrix
               </Link>
 
-              {/* NEW NAVIGATION MENU (Replaces the old tools links) */}
+              {/* Navigation Menu */}
               <div className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-500">
                 <Link href="/" className="hover:text-indigo-600 transition-colors">Home</Link>
-                <Link href="/" className="hover:text-indigo-600 transition-colors">Tools</Link>
+                <Link href="/#tools" className="hover:text-indigo-600 transition-colors">Tools</Link>
                 <Link href="/about" className="hover:text-indigo-600 transition-colors">About</Link>
                 <Link href="/privacy" className="hover:text-indigo-600 transition-colors">Policy</Link>
               </div>
@@ -56,7 +56,7 @@ export default function RootLayout({ children }) {
             {/* BIG CENTERED LOGO */}
             <div className="mb-10">
               <h2 className="text-5xl md:text-6xl font-extrabold text-white tracking-tight flex items-center justify-center gap-4">
-                <span className="text-indigo-500">❖</span> PDF Matrix
+                <FiBox className="text-indigo-500" /> Tools Matrix
               </h2>
             </div>
 
@@ -67,7 +67,7 @@ export default function RootLayout({ children }) {
               <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
             </div>
               
-            {/* LANGUAGE SELECTOR (Separate Line) */}
+            {/* LANGUAGE SELECTOR */}
             <div className="mb-16">
               <div className="inline-flex items-center gap-2 bg-slate-800/50 py-2 px-5 rounded-full border border-slate-700 hover:border-slate-500 cursor-pointer transition-all group">
                 <FiGlobe className="text-indigo-400" />
@@ -76,7 +76,7 @@ export default function RootLayout({ children }) {
               </div>
             </div>
             
-            {/* BRANDING BADGE (Saif Mulla Only) */}
+            {/* BRANDING BADGE */}
             <div className="flex items-center gap-4 bg-slate-800/40 py-3 px-8 rounded-full border border-slate-700/50 shadow-2xl backdrop-blur-sm hover:bg-slate-800/60 transition-all cursor-default transform hover:scale-105 duration-300">
               <span className="text-slate-300 text-sm md:text-base uppercase tracking-widest font-bold">
                 By <span className="text-indigo-400">Saif Mulla</span>

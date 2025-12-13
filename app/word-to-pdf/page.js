@@ -151,7 +151,7 @@ export default function WordToPdfPage() {
       <div className="py-24 px-6 bg-slate-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-20">
-            <h2 className="text-4xl font-extrabold text-gray-900 mb-6">Why use PDF Matrix?</h2>
+            <h2 className="text-4xl font-extrabold text-gray-900 mb-6">Why use Tools Matrix?</h2>
             <p className="text-xl text-gray-500">The smartest way to share documents.</p>
           </div>
 
@@ -202,7 +202,7 @@ export default function WordToPdfPage() {
           <h2 className="text-4xl font-bold text-gray-900 mb-8 text-center">Convert DOCX to PDF Free</h2>
           <p className="mb-6">
             Microsoft Word documents are excellent for editing, but they are risky for sharing. A resume that looks perfect on your laptop might look broken on a recruiter's phone. 
-            By converting to PDF with <strong>PDF Matrix</strong>, you ensure your document looks exactly the way you intended, everywhere.
+            By converting to PDF with <strong>Tools Matrix</strong>, you ensure your document looks exactly the way you intended, everywhere.
           </p>
           <p className="mb-6">
             This tool is essential for students submitting essays, job seekers sending resumes, and professionals sharing contracts. 

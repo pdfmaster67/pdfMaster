@@ -202,7 +202,7 @@ export default function ImageCompressPage() {
       <div className="py-24 px-6 bg-slate-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-20">
-            <h2 className="text-4xl font-extrabold text-gray-900 mb-6">Why use PDF Matrix?</h2>
+            <h2 className="text-4xl font-extrabold text-gray-900 mb-6">Why use Tools Matrix?</h2>
             <p className="text-xl text-gray-500">Optimization without compromise.</p>
           </div>
 
@@ -255,7 +255,7 @@ export default function ImageCompressPage() {
             High-resolution cameras are great, but the massive file sizes they create can be a headache. Large images eat up your storage space, take forever to upload, and slow down your website.
           </p>
           <p className="mb-6">
-            <strong>PDF Matrix</strong> offers a powerful image compressor that reduces file size by up to 80% while maintaining visible quality. 
+            <strong>Tools Matrix</strong> offers a powerful image compressor that reduces file size by up to 80% while maintaining visible quality. 
             Whether you are a web developer optimizing a landing page or a photographer sharing a portfolio, our tool gives you the perfect balance.
           </p>
           <p>

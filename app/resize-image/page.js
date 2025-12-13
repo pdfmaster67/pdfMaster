@@ -275,7 +275,7 @@ export default function ResizeImagePage() {
       <div className="py-24 px-6 bg-slate-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-20">
-            <h2 className="text-4xl font-extrabold text-gray-900 mb-6">Why use PDF Matrix?</h2>
+            <h2 className="text-4xl font-extrabold text-gray-900 mb-6">Why use Tools Matrix?</h2>
             <p className="text-xl text-gray-500">Precision resizing tools for professionals.</p>
           </div>
 
@@ -328,7 +328,7 @@ export default function ResizeImagePage() {
             Changing the size of an image is a common need, whether you are trying to fit a photo into a passport application frame, preparing a banner for a website, or setting up a high-quality print.
           </p>
           <p className="mb-6">
-            <strong>PDF Matrix</strong> gives you professional control. Unlike basic tools that only accept pixels, we allow you to define sizes in <strong>Centimeters (cm), Millimeters (mm), and Inches</strong>.
+            <strong>Tools Matrix</strong> gives you professional control. Unlike basic tools that only accept pixels, we allow you to define sizes in <strong>Centimeters (cm), Millimeters (mm), and Inches</strong>.
           </p>
           <p>
             Crucially, we support <strong>DPI (Dots Per Inch)</strong> selection. If you need to print an image at 4x6 inches, simply select "Inch", enter the dimensions, and choose 300 DPI. We automatically upscale the resolution to ensure your print comes out crystal clear.
