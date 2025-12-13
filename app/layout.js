@@ -29,14 +29,20 @@ export default function RootLayout({ children }) {
         <nav className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between h-20 items-center">
+              
+              {/* Logo */}
               <Link href="/" className="text-2xl font-extrabold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent flex items-center gap-2">
                 <span className="text-3xl">❖</span> PDF Matrix
               </Link>
-              <div className="hidden md:flex gap-6 text-sm font-medium text-slate-600">
-                <Link href="/merge-pdf" className="hover:text-indigo-600 transition">Merge</Link>
-                <Link href="/compress-image" className="hover:text-indigo-600 transition">Compress</Link>
-                <Link href="/word-to-pdf" className="hover:text-indigo-600 transition">Convert</Link>
+
+              {/* NEW NAVIGATION MENU (Replaces the old tools links) */}
+              <div className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-500">
+                <Link href="/" className="hover:text-indigo-600 transition-colors">Home</Link>
+                <Link href="/" className="hover:text-indigo-600 transition-colors">Tools</Link>
+                <Link href="/about" className="hover:text-indigo-600 transition-colors">About</Link>
+                <Link href="/privacy" className="hover:text-indigo-600 transition-colors">Policy</Link>
               </div>
+
             </div>
           </div>
         </nav>
@@ -61,7 +67,7 @@ export default function RootLayout({ children }) {
               <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
             </div>
               
-            {/* LANGUAGE SELECTOR (New Line) */}
+            {/* LANGUAGE SELECTOR (Separate Line) */}
             <div className="mb-16">
               <div className="inline-flex items-center gap-2 bg-slate-800/50 py-2 px-5 rounded-full border border-slate-700 hover:border-slate-500 cursor-pointer transition-all group">
                 <FiGlobe className="text-indigo-400" />
