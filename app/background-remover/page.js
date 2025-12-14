@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { removeBackground } from "@imgly/background-removal";
 import { 
   FiScissors, FiDownload, FiRefreshCw, FiCheckCircle, 
-  FiUploadCloud, FiShield, FiZap, FiLayers, FiShare2 
+  FiUploadCloud, FiShield, FiZap, FiLayers, FiShare2, FiX 
 } from 'react-icons/fi'; 
 
 export default function BackgroundRemoverPage() {
@@ -12,10 +12,14 @@ export default function BackgroundRemoverPage() {
   const [processedBlob, setProcessedBlob] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [loadingText, setLoadingText] = useState("");
-  const fileInputRef = useRef(null);
+  
+  // Create a temporary URL for the uploaded file to show the "blinking" effect
+  const [originalPreview, setOriginalPreview] = useState(null);
 
-  // --- HELPER: RESIZE IMAGE BEFORE PROCESSING (SPEED BOOST) ---
+  const fileInputRef = useRef(null);
+  const isCancelled = useRef(false);
+
+  // --- HELPER: AGGRESSIVE RESIZE FOR SPEED ---
   const resizeImage = (file) => {
     return new Promise((resolve) => {
       const img = new Image();
@@ -24,8 +28,9 @@ export default function BackgroundRemoverPage() {
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
         
-        // Cap max dimension to 1500px for speed
-        const maxDim = 1500; 
+        // SPEED SETTING: Cap max dimension to 720px
+        // This makes it significantly faster than 1500px
+        const maxDim = 720; 
         let width = img.width;
         let height = img.height;
 
@@ -43,9 +48,10 @@ export default function BackgroundRemoverPage() {
         canvas.height = height;
         ctx.drawImage(img, 0, 0, width, height);
 
+        // Compress to 0.8 quality (helps AI speed)
         canvas.toBlob((blob) => {
           resolve(blob);
-        }, file.type, 0.95);
+        }, file.type, 0.8);
       };
     });
   };
@@ -54,55 +60,59 @@ export default function BackgroundRemoverPage() {
   const handleFile = async (inputFile) => {
     if (inputFile && inputFile.type.startsWith('image/')) {
       setFile(inputFile);
+      setOriginalPreview(URL.createObjectURL(inputFile)); // Set preview for blinking effect
       setProcessedBlob(null);
       setPreviewUrl(null);
       
-      // 1. Resize first for speed
-      setLoadingText("Optimizing image...");
+      isCancelled.current = false;
+      
+      // 1. Resize immediately
       const optimizedBlob = await resizeImage(inputFile);
       
       // 2. Process
-      processImage(optimizedBlob, inputFile.name); // Pass original name
+      processImage(optimizedBlob);
     } else {
       alert("Please upload a valid image file (JPG, PNG).");
     }
   };
 
   // --- AI PROCESSING ---
-  const processImage = async (imageFile, originalFileName) => {
+  const processImage = async (imageFile) => {
     setIsProcessing(true);
-    setLoadingText("Initializing AI...");
 
     try {
       const config = {
-        progress: (key, current, total) => {
-          const percent = total > 0 ? Math.round((current / total) * 100) : 0;
-          setLoadingText(`Removing Background: ${percent}%`);
-        },
         debug: false,
-        model: 'medium' 
+        model: 'small', // 'small' is the fastest model available
+        // Progress callback removed to speed up React rendering
       };
 
       const blob = await removeBackground(imageFile, config);
-      const url = URL.createObjectURL(blob);
       
+      if (isCancelled.current) return;
+
+      const url = URL.createObjectURL(blob);
       setProcessedBlob(blob);
       setPreviewUrl(url);
 
-      // --- AUTO DOWNLOAD (High Quality PNG) ---
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `toolsmatrix_nobg_${originalFileName.split('.')[0]}.png`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-
     } catch (error) {
-      console.error(error);
-      alert("Failed to remove background.");
+      if (!isCancelled.current) {
+        console.error(error);
+        alert("Failed to process. Try a simpler image.");
+      }
     } finally {
-      setIsProcessing(false);
+      if (!isCancelled.current) {
+        setIsProcessing(false);
+      }
     }
+  };
+
+  // --- CANCEL HANDLER ---
+  const cancelProcess = () => {
+    isCancelled.current = true;
+    setIsProcessing(false);
+    setFile(null);
+    setOriginalPreview(null);
   };
 
   // --- MANUAL DOWNLOAD HANDLER ---
@@ -163,7 +173,7 @@ export default function BackgroundRemoverPage() {
       <div className="flex flex-col items-center p-6 pt-16 pb-24">
         <div className="w-full max-w-lg text-center mb-10">
           <h1 className="text-5xl font-extrabold tracking-tight text-gray-900 mb-3">Remove Background</h1>
-          <p className="text-lg text-gray-500 font-medium">AI-powered instant background removal.</p>
+          <p className="text-lg text-gray-500 font-medium">Fast AI-powered background removal.</p>
         </div>
 
         <div className="w-full max-w-lg bg-white shadow-2xl rounded-3xl p-10 transition-all hover:scale-[1.01]">
@@ -183,18 +193,37 @@ export default function BackgroundRemoverPage() {
               <p className="text-gray-400 font-medium text-sm">JPG, PNG, WEBP</p>
             </div>
           ) : isProcessing ? (
-             <div className="text-center py-10">
-                <div className="w-16 h-16 border-4 border-yellow-200 border-t-yellow-500 rounded-full animate-spin mx-auto mb-6"></div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Processing...</h3>
-                <p className="text-gray-500 animate-pulse">{loadingText}</p>
+             /* --- PROCESSING STATE (BLINKING IMAGE) --- */
+             <div className="text-center py-6 relative">
+                <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center justify-center gap-2">
+                   <FiZap className="animate-bounce text-yellow-500"/> AI Processing...
+                </h3>
+                
+                {/* BLINKING IMAGE CONTAINER */}
+                <div className="relative w-full h-64 mb-8 rounded-xl overflow-hidden bg-gray-100 border border-gray-200">
+                    <img 
+                        src={originalPreview} 
+                        alt="Processing" 
+                        className="w-full h-full object-contain animate-pulse opacity-70 blur-sm transition-all duration-700" 
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-12 h-12 border-4 border-white border-t-yellow-500 rounded-full animate-spin"></div>
+                    </div>
+                </div>
+
+                <button 
+                  onClick={cancelProcess}
+                  className="inline-flex items-center gap-2 bg-red-50 text-red-600 px-6 py-2 rounded-full font-bold hover:bg-red-100 transition-colors border border-red-200"
+                >
+                  <FiX /> Cancel
+                </button>
              </div>
           ) : (
             <div className="text-center animate-fade-in">
               <div className="mx-auto w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6 shadow-sm">
                 <FiCheckCircle size={40} />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Background Removed!</h3>
-              <p className="text-sm text-gray-500 mb-6">Your PNG has started downloading.</p>
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Background Removed!</h3>
               
               <div className="relative w-full h-64 bg-[url('https://upload.wikimedia.org/wikipedia/commons/e/e9/Transparency_demonstration_1.png')] bg-cover rounded-xl overflow-hidden border border-gray-200 mb-8 shadow-inner">
                 <img src={previewUrl} alt="Processed" className="w-full h-full object-contain relative z-10" />
@@ -202,11 +231,7 @@ export default function BackgroundRemoverPage() {
               
               <div className="space-y-3">
                 <button onClick={() => downloadImage('high')} className="w-full flex items-center justify-center gap-3 bg-yellow-500 hover:bg-yellow-600 text-white py-3 px-6 rounded-xl font-bold text-lg shadow-lg shadow-yellow-200 transition-transform hover:-translate-y-1">
-                  <FiDownload size={20} /> Download High Quality <span className="text-xs opacity-70 ml-1">(Original)</span>
-                </button>
-
-                <button onClick={() => downloadImage('low')} className="w-full flex items-center justify-center gap-3 bg-yellow-100 hover:bg-yellow-200 text-yellow-800 py-3 px-6 rounded-xl font-bold text-lg transition-transform hover:-translate-y-1">
-                  <FiDownload size={20} /> Download Low Quality <span className="text-xs opacity-70 ml-1">(Compressed)</span>
+                  <FiDownload size={20} /> Download PNG <span className="text-xs opacity-70 ml-1">(Original)</span>
                 </button>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -252,37 +277,6 @@ export default function BackgroundRemoverPage() {
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-4">Download PNG</h3>
               <p className="text-gray-500 text-lg leading-relaxed">Get your image as a transparent PNG, ready for design or e-commerce.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* --- WHY CHOOSE US (SEO) --- */}
-      <div className="py-24 px-6 bg-slate-50">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-20">
-            <h2 className="text-4xl font-extrabold text-gray-900 mb-6">Why use Tools Matrix?</h2>
-            <p className="text-xl text-gray-500">Perfect for creators and sellers.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            <div className="bg-white p-10 rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 flex items-start space-x-6">
-              <div className="flex-shrink-0 w-16 h-16 bg-yellow-50 text-yellow-600 rounded-2xl flex items-center justify-center">
-                <FiShield size={32} />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">100% Private</h3>
-                <p className="text-gray-500 text-lg leading-relaxed">Your photos are processed entirely in your browser. No data is ever sent to a server.</p>
-              </div>
-            </div>
-            <div className="bg-white p-10 rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 flex items-start space-x-6">
-              <div className="flex-shrink-0 w-16 h-16 bg-yellow-50 text-yellow-600 rounded-2xl flex items-center justify-center">
-                <FiLayers size={32} />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Design Ready</h3>
-                <p className="text-gray-500 text-lg leading-relaxed">Get transparent PNGs that you can drop directly into Photoshop, Canva, or Illustrator.</p>
-              </div>
             </div>
           </div>
         </div>

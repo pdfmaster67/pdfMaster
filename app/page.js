@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { 
   FiFileText, FiImage, FiLayers, FiMinimize2, FiMaximize2, FiGrid, 
   FiShield, FiZap, FiGlobe, FiCpu, FiUploadCloud, FiDownload, 
-  FiScissors, FiEdit, FiLock, FiLayout 
+  FiScissors, FiLayout 
 } from 'react-icons/fi'; 
 
 export default function HomePage() {
@@ -27,7 +27,7 @@ export default function HomePage() {
       text: "text-orange-50", 
       shadow: "shadow-orange-200" 
     },
-    // 3. Split PDF (New)
+    // 3. Split PDF
     { 
       name: "Split PDF", 
       icon: <FiLayout size={36} />, 
@@ -37,57 +37,7 @@ export default function HomePage() {
       text: "text-blue-50", 
       shadow: "shadow-blue-200" 
     },
-    // 4. Remove Background
-    { 
-      name: "Remove Background", 
-      icon: <FiScissors size={36} />, 
-      href: "/background-remover", 
-      desc: "Instant AI Cutouts", 
-      gradient: "from-red-500 to-rose-500", 
-      text: "text-red-50", 
-      shadow: "shadow-red-200" 
-    },
-    // 5. Word to PDF
-    { 
-      name: "Word to PDF", 
-      icon: <FiFileText size={36} />, 
-      href: "/word-to-pdf", 
-      desc: "DOCX files to PDF", 
-      gradient: "from-blue-400 to-cyan-500", 
-      text: "text-blue-50", 
-      shadow: "shadow-blue-200" 
-    },
-    // 6. Excel to PDF
-    { 
-      name: "Excel to PDF", 
-      icon: <FiGrid size={36} />, 
-      href: "/excel-to-pdf", 
-      desc: "Spreadsheets to PDF", 
-      gradient: "from-emerald-400 to-green-600", 
-      text: "text-emerald-50", 
-      shadow: "shadow-green-200" 
-    },
-    // 7. Protect PDF (New)
-    { 
-      name: "Protect PDF", 
-      icon: <FiLock size={36} />, 
-      href: "/protect-pdf", 
-      desc: "Encrypt with Password", 
-      gradient: "from-gray-700 to-gray-900", 
-      text: "text-gray-50", 
-      shadow: "shadow-gray-300" 
-    },
-    // 8. Edit PDF
-    { 
-      name: "Edit PDF", 
-      icon: <FiEdit size={36} />, 
-      href: "/edit-pdf", 
-      desc: "Rotate & Delete Pages", 
-      gradient: "from-indigo-500 to-blue-500", 
-      text: "text-indigo-50", 
-      shadow: "shadow-indigo-200" 
-    },
-    // 9. Compress Image
+    // 4. Compress Image (Moved Here)
     { 
       name: "Compress Image", 
       icon: <FiMinimize2 size={36} />, 
@@ -97,7 +47,7 @@ export default function HomePage() {
       text: "text-pink-50", 
       shadow: "shadow-pink-200" 
     },
-    // 10. Resize Image
+    // 5. Resize Image (Moved Here)
     { 
       name: "Resize Image", 
       icon: <FiMaximize2 size={36} />, 
@@ -106,6 +56,36 @@ export default function HomePage() {
       gradient: "from-cyan-400 to-teal-500", 
       text: "text-cyan-50", 
       shadow: "shadow-cyan-200" 
+    },
+    // 6. Remove Background
+    { 
+      name: "Remove Background", 
+      icon: <FiScissors size={36} />, 
+      href: "/background-remover", 
+      desc: "Instant AI Cutouts", 
+      gradient: "from-red-500 to-rose-500", 
+      text: "text-red-50", 
+      shadow: "shadow-red-200" 
+    },
+    // 7. Word to PDF
+    { 
+      name: "Word to PDF", 
+      icon: <FiFileText size={36} />, 
+      href: "/word-to-pdf", 
+      desc: "DOCX files to PDF", 
+      gradient: "from-blue-400 to-cyan-500", 
+      text: "text-blue-50", 
+      shadow: "shadow-blue-200" 
+    },
+    // 8. Excel to PDF
+    { 
+      name: "Excel to PDF", 
+      icon: <FiGrid size={36} />, 
+      href: "/excel-to-pdf", 
+      desc: "Spreadsheets to PDF", 
+      gradient: "from-emerald-400 to-green-600", 
+      text: "text-emerald-50", 
+      shadow: "shadow-green-200" 
     },
   ];
 
@@ -228,7 +208,7 @@ export default function HomePage() {
           </p>
           <p className="mb-6">
             Whether you need to <strong>merge PDFs</strong> for a report, <strong>remove backgrounds</strong> from product photos, 
-            or <strong>protect sensitive documents</strong> with encryption, our platform offers professional-grade tools completely free. 
+            or <strong>compress large images</strong>, our platform offers professional-grade tools completely free. 
             We support <strong>PDF, DOCX, XLSX, JPG, and PNG</strong> formats.
           </p>
           <p>
